@@ -52,7 +52,6 @@ class UserController extends Controller
         $contacts  =  $this->fetchContacts($id);
         $Cases = $this->casesInNetwork($contacts);
         $organizations = \App\Models\User::find($id)->organizations;
-        //dd($Cases);  
         return view('users.show', ['User'=>$user, 'Network'=>$contacts, 'NetworkOrg'=>$organizations,
     'Reports'=>$Cases]);
     }

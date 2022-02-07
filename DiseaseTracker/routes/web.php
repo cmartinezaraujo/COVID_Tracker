@@ -9,7 +9,7 @@ use App\Http\Controllers\Organization_MemberController;
 use App\Http\Controllers\Organization_NetworkController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ReportController;
-
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +26,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/home', function () {
+    return view('home', ['user' => Auth::user()]);
+})->middleware(['auth'])->name('home');
+
 Route::resource('users', UserController::class);
 
 Route::resource('attachments', AttachmentController::class);
@@ -40,6 +44,7 @@ Route::resource('organization_networks', Organization_NetworkController::class);
 
 Route::resource('reports', ReportController::class);
 
-
 Route::resource('organizations', OrganizationController::class);
 
+
+require __DIR__.'/auth.php';
