@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReportController extends Controller
 {
@@ -24,12 +25,10 @@ class ReportController extends Controller
      * @return \Illuminate\Http\Response
      */
 
-     //TODO: get user info when authentication is imlemented
     public function create()
     {
        //
-       
-        return view('reports.create');
+        return view('reports.create', ['user'=>Auth::user()]);
     }
 
     /**
@@ -41,7 +40,19 @@ class ReportController extends Controller
     public function store(Request $request)
     {
         //
-        dd($request);
+        
+        $validatedData = $request->validate(['type'=>'required']);
+        $allData = array(
+            'user_id'=>Auth::user()->id, 
+            'type'=> $request->type,
+            'reported'=> new \DateTime(),
+            'notes'=> $request->notes,
+            'has_attachment' =>'false', //CHANGE THIS WHEN FILES ARE IMPLEMENTED
+            'is_anonymous' => ($request->anonymous == 'on') ? 'true' : 'false');
+        
+       \App\Models\Report::create($allData);
+
+       return redirect()->route('users.show', Auth::user()); 
     }
 
     /**
@@ -54,7 +65,6 @@ class ReportController extends Controller
     {
         //
         $case = \App\Models\Report::find($id);
-        //dd($case);
         return view('reports.show', ['caseInfo'=>$case]);
     }
 
