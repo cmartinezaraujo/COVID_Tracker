@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class ReportController extends Controller
 {
@@ -40,7 +41,7 @@ class ReportController extends Controller
     public function store(Request $request)
     {
         //
-        
+        $user = Auth::user();
         $validatedData = $request->validate(['type'=>'required']);
         $allData = array(
             'user_id'=>Auth::user()->id, 
@@ -50,9 +51,10 @@ class ReportController extends Controller
             'has_attachment' =>'false', //CHANGE THIS WHEN FILES ARE IMPLEMENTED
             'is_anonymous' => ($request->anonymous == 'on') ? 'true' : 'false');
         
-       \App\Models\Report::create($allData);
 
-       return redirect()->route('users.show', Auth::user()); 
+       //\App\Models\Report::create($allData);
+       $this->sendReportNotification($user);
+       return redirect()->route('users.show', $user); 
     }
 
     /**
@@ -65,6 +67,7 @@ class ReportController extends Controller
     {
         //
         $case = \App\Models\Report::find($id);
+
         return view('reports.show', ['caseInfo'=>$case]);
     }
 
@@ -100,5 +103,23 @@ class ReportController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function sendReportNotification($user){
+        $users = $this->fetchContacts($user->id);
+
+        $reportData = [
+            'body'=> 'You recieved a new report test notification',
+            'reportText'=> 'A report has been made in your network',
+            'url'=> url('/'),
+            'thankyou'=> 'Thank you'
+        ];
+        Notification::send($users, new \App\Notifications\Report($reportData));
+    }
+
+    public function fetchContacts($id){
+        $userReq = \App\Models\User::find($id)->contactsOfMine;
+        $userAcc= \App\Models\User::find($id)->contactsOf;
+        return $userReq->merge($userAcc);
     }
 }
